@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Smart Complaint System{% endblock %}
+
+{% block content %}
+<div style="margin: 2rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">👋 Welcome, {{ session.get('user_name') }}!</h1>
+        <p style="color: #6b7280; font-size: 1.1rem;">Track and manage your complaints in one place</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">📊 Total Complaints</div>
+            <div class="stat-number">{{ total }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">⏳ Pending</div>
+            <div class="stat-number">{{ pending }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">⚙️ In Progress</div>
+            <div class="stat-number">{{ in_progress }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">✅ Resolved</div>
+            <div class="stat-number">{{ resolved }}</div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ url_for('submit_complaint') }}" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.05rem;">➕ Submit New Complaint</a>
+    </div>
+
+    <!-- Complaints List -->
+    <div class="card">
+        <div class="card-header">
+            <h2>📋 Your Complaints</h2>
+        </div>
+        <div class="card-body">
+            {% if complaints %}
+                {% for complaint in complaints %}
+                    <div class="complaint-card">
+                        <div class="complaint-header">
+                            <div style="flex: 1;">
+                                <div class="complaint-title">
+                                    {{ complaint['category'] }}
+                                    <span class="badge {{ 'badge-pending' if complaint['status'] == 'Pending' else 'badge-in-progress' if complaint['status'] == 'In Progress' else 'badge-resolved' }}">
+                                        {{ complaint['status'] }}
+                                    </span>
+                                </div>
+                                <div class="complaint-meta">
+                                    📅 Submitted: {{ complaint['created_at'][:10] }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="complaint-description">
+                            {{ complaint['description'][:200] }}{% if complaint['description']|length > 200 %}...{% endif %}
+                        </div>
+                        {% if complaint['image_path'] %}
+                            <img src="/uploads/{{ complaint['image_path'] }}" alt="Complaint Image" class="complaint-image">
+                        {% endif %}
+                        <div class="complaint-actions">
+                            <a href="{{ url_for('complaint_status', complaint_id=complaint['id']) }}" class="btn btn-sm btn-info">👁️ View Details</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 3rem; color: #9ca3af;">
+                    <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem;">📭 No complaints yet</p>
+                    <p>Start by submitting your first complaint</p>
+                    <a href="{{ url_for('submit_complaint') }}" class="btn btn-primary" style="margin-top: 1rem;">Submit Complaint</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-lg {
+        padding: 0.9rem 1.8rem;
+        font-size: 1.05rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Complaint - Smart Complaint System{% endblock %}
+
+{% block content %}
+<div style="margin: 2rem 0;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">📝 Submit a Complaint</h1>
+    <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 2rem;">Help us improve by reporting your concerns. Provide as much detail as possible.</p>
+
+    <div class="card" style="max-width: 800px;">
+        <div class="card-header">
+            <h2>Complaint Details</h2>
+        </div>
+        <div class="card-body" style="padding: 2rem 0;">
+            <form method="POST" action="{{ url_for('submit_complaint') }}" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="category">📂 Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">-- Select Category --</option>
+                        <option value="Academic Issues">📚 Academic Issues</option>
+                        <option value="Faculty/Staff Conduct">👨‍🏫 Faculty/Staff Conduct</option>
+                        <option value="Facilities Issues">🏢 Facilities Issues</option>
+                        <option value="Infrastructure/Maintenance">🔧 Infrastructure/Maintenance</option>
+                        <option value="Hostel/Accommodation">🏠 Hostel/Accommodation</option>
+                        <option value="Canteen/Food Services">🍽️ Canteen/Food Services</option>
+                        <option value="Examination/Assessment">✏️ Examination/Assessment</option>
+                        <option value="Campus Safety">🛡️ Campus Safety</option>
+                        <option value="Other">📌 Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">📄 Description *</label>
+                    <textarea id="description" name="description" required placeholder="Describe your complaint in detail. Include what happened, when it happened, and how it affected you..." style="font-size: 1rem;"></textarea>
+                    <small style="color: #6b7280; display: block; margin-top: 0.5rem;">Maximum 5000 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">📸 Attach Image (Optional)</label>
+                    <input type="file" id="image" name="image" accept="image/*" style="padding: 1rem; border: 2px dashed var(--accent-color); border-radius: 8px; cursor: pointer;">
+                    <small style="color: #6b7280; display: block; margin-top: 0.5rem;">Supported: PNG, JPG, JPEG, GIF (Max 5MB)</small>
+                    <div id="imagePreview"></div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary">✅ Submit Complaint</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">❌ Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        validateFileSize('image', 16);
+    });
+</script>
+{% endblock %}

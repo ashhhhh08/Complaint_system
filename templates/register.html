@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}User Registration - Smart Complaint System{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Create Account</h1>
+        <p>Join us to submit and track complaints</p>
+        
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="form-group">
+                <label for="name">👤 Full Name</label>
+                <input type="text" id="name" name="name" required placeholder="John Doe">
+            </div>
+
+            <div class="form-group">
+                <label for="email">📧 Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="your@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">🔐 Password</label>
+                <input type="password" id="password" name="password" required placeholder="At least 6 characters" minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">🔐 Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        </form>
+
+        <div class="auth-links">
+            <p>Already have an account? <a href="{{ url_for('login') }}">Sign in here</a></p>
+            <p style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;"><a href="{{ url_for('admin_login') }}">Admin? Login here</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    main .container {
+        padding: 0;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Smart Complaint System{% endblock %}
+
+{% block content %}
+<div style="margin: 2rem 0;">
+    <h1>Admin Dashboard</h1>
+    <p style="color: #666; margin-bottom: 2rem;">Manage all complaints and user submissions.</p>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Complaints</div>
+            <div class="stat-number">{{ stats['total'] }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Pending</div>
+            <div class="stat-number">{{ stats['pending'] }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">In Progress</div>
+            <div class="stat-number">{{ stats['in_progress'] }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Resolved</div>
+            <div class="stat-number">{{ stats['resolved'] }}</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <form method="GET" action="{{ url_for('admin_dashboard') }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; width: 100%;">
+            <div class="filter-group">
+                <label for="status">Filter by Status</label>
+                <select id="status" name="status" onchange="this.form.submit()">
+                    <option value="All" {% if current_status == 'All' %}selected{% endif %}>All Status</option>
+                    <option value="Pending" {% if current_status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="In Progress" {% if current_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Resolved" {% if current_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="category">Filter by Category</label>
+                <select id="category" name="category" onchange="this.form.submit()">
+                    <option value="All" {% if current_category == 'All' %}selected{% endif %}>All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="search">Search</label>
+                <input type="text" id="search" name="search" placeholder="Search complaints..." value="{{ search_query }}">
+            </div>
+
+            <div class="filter-group" style="display: flex; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="exportToCSV()">📥 Export CSV</button>
+        <button class="btn btn-secondary" onclick="printComplaints()">🖨️ Print</button>
+    </div>
+
+    <!-- Complaints Table -->
+    <div class="card">
+        <div class="card-header">
+            <h2>All Complaints</h2>
+        </div>
+        <div class="card-body">
+            {% if complaints %}
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in complaints %}
+                                <tr>
+                                    <td>#{{ complaint['id'] }}</td>
+                                    <td>
+                                        <strong>{{ complaint['name'] }}</strong><br>
+                                        <small style="color: #666;">{{ complaint['email'] }}</small>
+                                    </td>
+                                    <td>{{ complaint['category'] }}</td>
+                                    <td>{{ complaint['description'][:50] }}...</td>
+                                    <td>
+                                        <span class="badge {{ 'badge-pending' if complaint['status'] == 'Pending' else 'badge-in-progress' if complaint['status'] == 'In Progress' else 'badge-resolved' }}">
+                                            {{ complaint['status'] }}
+                                        </span>
+                                    </td>
+                                    <td>{{ complaint['created_at'][:10] }}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                            <button class="btn btn-sm btn-info complaint-view-btn" data-complaint-id="{{ complaint.id }}">View</button>
+                                            <button class="btn btn-sm btn-warning complaint-update-btn" data-complaint-id="{{ complaint.id }}">Update</button>
+                                            <form method="POST" action="{{ url_for('delete_complaint', complaint_id=complaint['id']) }}" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this complaint?')">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 3rem; color: #999;">
+                    <p>No complaints found.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modals Container -->
+    {% if complaints %}
+        {% for complaint in complaints %}
+            <!-- View Modal -->
+            <div id="modal-{{ complaint['id'] }}" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Complaint #{{ complaint['id'] }}</h2>
+                        <button class="modal-close" onclick="closeModal(event)">×</button>
+                    </div>
+                    <div style="max-height: 60vh; overflow-y: auto; padding: 1.5rem;">
+                        <p><strong>User:</strong> {{ complaint['name'] }} ({{ complaint['email'] }})</p>
+                        <p><strong>Category:</strong> {{ complaint['category'] }}</p>
+                        <p><strong>Status:</strong> <span class="badge {{ 'badge-pending' if complaint['status'] == 'Pending' else 'badge-in-progress' if complaint['status'] == 'In Progress' else 'badge-resolved' }}">{{ complaint['status'] }}</span></p>
+                        <p><strong>Date:</strong> {{ complaint['created_at'] }}</p>
+                        <hr>
+                        <h3>Description</h3>
+                        <p>{{ complaint['description'] }}</p>
+                        {% if complaint['image_path'] %}
+                            <h3 style="margin-top: 1.5rem;">Attached Image</h3>
+                            <img src="/uploads/{{ complaint['image_path'] }}" alt="Complaint Image" style="max-width: 100%; height: auto; border-radius: 4px;">
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #e0e0e0; padding-top: 1rem; margin-top: 1rem;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal(event)">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Update Modal -->
+            <div id="status-{{ complaint['id'] }}" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Update Status - Complaint #{{ complaint['id'] }}</h2>
+                        <button class="modal-close" onclick="closeModal(event)">×</button>
+                    </div>
+                    <form method="POST" action="{{ url_for('update_status', complaint_id=complaint['id']) }}">
+                        <div class="modal-body" style="padding: 1.5rem;">
+                            <div class="form-group">
+                                <label for="status-input-{{ complaint['id'] }}">New Status</label>
+                                <select id="status-input-{{ complaint['id'] }}" name="status" required>
+                                    <option value="Pending" {% if complaint['status'] == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="In Progress" {% if complaint['status'] == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="Resolved" {% if complaint['status'] == 'Resolved' %}selected{% endif %}>Resolved</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="border-top: 1px solid #e0e0e0; padding-top: 1rem; margin-top: 1rem; display: flex; gap: 1rem; padding: 1rem 1.5rem 0;">
+                            <button type="submit" class="btn btn-primary">Update Status</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeModal(event)">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

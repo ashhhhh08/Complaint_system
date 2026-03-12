@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Smart Complaint System{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Admin Portal</h1>
+        <p>Access the administration panel</p>
+        
+        <form method="POST" action="{{ url_for('admin_login') }}">
+            <div class="form-group">
+                <label for="email">📧 Admin Email</label>
+                <input type="email" id="email" name="email" required placeholder="admin@example.com" value="admin@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">🔐 Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter password" value="admin123">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Admin Login</button>
+        </form>
+
+        <div class="auth-links">
+            <p><a href="{{ url_for('login') }}">👤 User Login</a></p>
+            <p><a href="{{ url_for('register') }}">📝 Create Account</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    main .container {
+        padding: 0;
+    }
+</style>
+
+<script>
+    // Pre-fill admin credentials for demo
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('email').value = 'admin@example.com';
+        document.getElementById('password').value = 'admin123';
+    });
+</script>
+{% endblock %}
